@@ -1,38 +1,51 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'Name is required'],
-      trim: true
+      required: [true, "Name is required"],
+      trim: true,
+      minlength: 2,
+      maxlength: 50,
     },
+
     email: {
       type: String,
-      required: [true, 'Email is required'],
+      required: [true, "Email is required"],
       unique: true,
       lowercase: true,
-      trim: true
+      trim: true,
     },
+
     password: {
       type: String,
-      required: [true, 'Password is required'],
-      minlength: [6, 'Password must be at least 6 characters']
+      required: [true, "Password is required"],
+      minlength: 6,
+      select: false, // Password will not be returned by normal queries
     },
-    phone: {
+    confirmPassword: {
       type: String,
-      trim: true
+      required: [true, "Password is required"],
+      minlength: 6,
+      select: false, 
     },
-    address: {
+
+    role: {
       type: String,
-      trim: true
-    }
+      enum: ["customer", "vendor", "admin"],
+      default: "customer",
+    },
+
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
-    timestamps: true
+    timestamps: true, // Automatically adds createdAt and updatedAt
   }
 );
 
-const User = mongoose.model('User', userSchema);
-
+const User = mongoose.model("User", userSchema);
 export default User;
