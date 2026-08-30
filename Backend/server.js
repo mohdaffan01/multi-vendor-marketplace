@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import { createUser,login } from './controllers/user.controller.js';
+import userRouter from './routers/user.router.js';
 
 dotenv.config();
 
@@ -30,9 +30,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Api Routes
-app.post('/register', createUser);
-app.post('/login', login);
+// User API Routes
+app.use(userRouter);
+
 
 
 

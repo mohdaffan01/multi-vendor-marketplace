@@ -8,9 +8,14 @@ models -
 controllers -
 - user.controller.js
     - createUser
-    - 
+    - login
 
-.evn 
+routers -
+- user.router.js
+    - POST /register
+    - POST /login
+
+.env 
 - PORT 
 - MONGO_URL
 

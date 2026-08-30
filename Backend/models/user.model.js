@@ -24,12 +24,6 @@ const userSchema = new mongoose.Schema(
       minlength: 6,
       select: false, // Password will not be returned by normal queries
     },
-    confirmPassword: {
-      type: String,
-      required: [true, "Password is required"],
-      minlength: 6,
-      select: false, 
-    },
 
     role: {
       type: String,
