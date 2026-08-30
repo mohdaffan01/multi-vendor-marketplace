@@ -95,7 +95,7 @@ export const login = async (req, res) => {
     // Normalize email
     const email = data.email.trim().toLowerCase();
     // Find user
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -103,7 +103,7 @@ export const login = async (req, res) => {
       });
     }
     // Compare entered password with hashed password
-    const comparePassword = await bcrypt.compare(data.password,user.password);
+    const comparePassword = await bcrypt.compare(data.password, user.password);
     if (!comparePassword) {
       return res.status(401).json({
         success: false,
@@ -125,6 +125,7 @@ export const login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        password : user.password,
       },
     });
 
