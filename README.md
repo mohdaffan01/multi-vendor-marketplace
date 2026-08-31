@@ -1,7 +1,7 @@
 # Multi-Vendor Marketplace - Project Documentation
 
 ## 📌 Project Overview
-This repository contains the full-stack architecture for a **Multi-Vendor Marketplace**. It enables multiple vendors (sellers) to register, manage their stores, list products, and fulfill orders, while customers can browse, purchase items, and manage their profiles.
+This repository contains the backend architecture for a **Multi-Vendor Marketplace**. It enables multiple vendors (sellers) to register, list products, and manage inventory, while customers can register, login, and browse items.
 
 ---
 
@@ -10,18 +10,26 @@ This repository contains the full-stack architecture for a **Multi-Vendor Market
 ```text
 multi-vendor-marketplace/
 ├── Backend/
-│   ├── config/             # Database and app configurations (planned)
-│   ├── controllers/        # Route controllers (user.controller.js initialized)
-│   ├── models/             # Mongoose schemas & models
-│   │   └── user.model.js   # User model (Customer, Vendor, Admin)
-│   ├── routes/             # API routes (planned)
-│   ├── middlewares/        # Auth & error handling middlewares (planned)
-│   ├── .env                # Environment variables configuration
-│   ├── .env.example        # Environment variable template
-│   ├── package.json        # Node.js ES Module configuration & dependencies
-│   └── server.js           # Main Express server entry point
-├── Frontend/               # Client application (planned)
-└── Docs/                   # Project documentation & schema guides
+│   ├── controllers/            # Controller logic for users and products
+│   │   ├── user.controller.js  # User registration & login
+│   │   └── product.controller.js # Product CRUD operations
+│   ├── middleware/             # Custom middlewares
+│   │   ├── error.middleware.js # Centralized global error handling
+│   │   └── auth.middleware.js  # JWT Protect & Role-based Authorization
+│   ├── models/                 # Mongoose database models
+│   │   ├── user.model.js       # User schema (Customer, Vendor, Admin)
+│   │   └── product.model.js    # Product schema
+│   ├── routers/                # API route declarations
+│   │   ├── user.router.js      # User auth routes (/register, /login)
+│   │   └── product.router.js   # Product routes (/products)
+│   ├── .env                    # Environment variables configuration
+│   ├── .env.example            # Environment variable template
+│   ├── package.json            # Dependencies & ES Module config
+│   └── server.js               # Express application entry point
+├── Frontend/                   # Client web application (planned)
+├── Docs/                       # Documentation & AI rules
+├── Implementation.md           # Backend implementation status tracking
+└── postmanTesting.md           # API testing guide with input JSON payloads
 ```
 
 ---
@@ -30,54 +38,43 @@ multi-vendor-marketplace/
 
 - **Runtime**: Node.js (ES Modules - `"type": "module"`)
 - **Framework**: Express.js (`v5.2.1`)
-- **Database**: MongoDB with Mongoose ODM (`v8.x`)
-- **Utility Libraries**: `cors`, `dotenv`
+- **Database**: MongoDB with Mongoose ODM (`v9.9.4`)
+- **Authentication & Security**: `bcrypt` (password hashing), `jsonwebtoken`, `cookie-parser`
+- **Utility & Middleware**: `cors`, `dotenv`
 
 ---
 
-## ✅ Progress & Implementation Completed
+## 🚀 Implemented API Endpoints
 
-### 1. Express Server Initialization (`server.js`)
-- Configured Express 5 server listening on configurable `PORT` (Default: `5000`).
-- Enabled standard security & parsing middlewares (`cors`, `express.json()`, `express.urlencoded()`).
-- Added health-check endpoints (`/` and `/api/health`).
-- Implemented global 404 route handler and centralized Error Handling Middleware.
+### 1. Base & Health Check
+- `GET /` - Base API status check
+- `GET /health` - Health check status (`{ "status": "ok" }`)
 
-### 2. User Data Model (`models/user.model.js`)
-Implemented a robust Mongoose schema supporting 3 distinct roles: **Customer**, **Vendor**, and **Admin**.
+### 2. User Routes (`/routers/user.router.js`)
+- `POST /register` - Register a new User (`customer` or `vendor`)
+- `POST /login` - User authentication & login
+- `GET /profile` - Get authenticated user profile (*Protected*)
 
-#### Key Features of `User` Model:
-- **Core User Profile**:
-  - `name`: Full name string (max 50 chars).
-  - `email`: Trimmed, lowercased, unique, validated with regular expression.
-  - `password`: Hashed password string (`select: false` by default for query protection).
-  - `role`: Enum `['customer', 'vendor', 'admin']` (default: `'customer'`).
-  - `phone`, `avatar`: Optional contact & profile image paths.
-- **Embedded Address Schema (`addresses`)**:
-  - Array of user delivery addresses (`street`, `city`, `state`, `zipCode`, `country`, `isDefault`).
-- **Vendor-Specific Profile (`vendorDetails`)**:
-  - `storeName`: Unique store identifier.
-  - `storeDescription`, `storeLogo`, `storeBanner`.
-  - `taxId`: Business / Tax Identification.
-  - `isApproved`: Boolean flag for platform administrator approval.
-  - `commissionRate`: Platform percentage cut (default: `10%`).
-  - `bankAccount`: Account details for vendor payouts (`accountHolder`, `accountNumber`, `bankName`, `routingNumber`).
-- **Security & Status Fields**:
-  - `isEmailVerified`, `isActive`.
-  - `resetPasswordToken`, `resetPasswordExpire`.
-  - `verificationToken`, `verificationTokenExpire`.
-- **Serialization Protection**:
-  - Built-in `toJSON()` method strips sensitive properties (`password`, `resetPasswordToken`, `verificationToken`) automatically whenever user objects are sent in API responses.
+### 3. Product Routes (`/routers/product.router.js`)
+- `POST /products` - Create a new Product
+- `GET /products` - Get all Products (with populated vendor details)
+- `GET /products/:id` - Get a single Product by ID
+- `PUT /products/:id` - Update Product details by ID
+- `DELETE /products/:id` - Remove a Product by ID
 
 ---
 
-## 🚀 Next Planned Steps
+## ⚙️ Middleware Features
 
-1. **Database Connection (`Backend/config/db.js`)**:
-   - Establish Mongoose connection to MongoDB URI using `.env`.
-2. **User Controller & Authentication Routes (`controllers/user.controller.js`)**:
-   - Register user (Customer / Vendor registration workflows).
-   - User login & JWT authentication token generation.
-   - Password reset workflow & profile management.
-3. **Middleware**:
-   - JWT validation middleware & Role-based Access Control (`protect`, `authorize('admin', 'vendor')`).
+1. **Global Error Handler (`error.middleware.js`)**:
+   - Centralized error response formatting for Express.
+   - Built-in formatting for Mongoose `CastError`, Duplicate Key (`11000`), and `ValidationError`.
+
+2. **Authentication & Authorization (`auth.middleware.js`)**:
+   - `protect`: Verifies JWT from `Authorization: Bearer <token>` header or cookies.
+   - `authorize(...roles)`: Restricts route access based on user role (`customer`, `vendor`, `admin`).
+
+---
+
+## 🧪 Postman API Testing
+For detailed Postman setup, input JSON payloads, and testing instructions, view [`postmanTesting.md`](file:///c:/Java-Script/projects/multi-vendor-marketplace/postmanTesting.md).
