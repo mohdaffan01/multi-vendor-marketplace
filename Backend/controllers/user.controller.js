@@ -6,13 +6,8 @@ import bcrypt from "bcrypt";
 export const createUser = async (req, res, next) => {
   try {
     const data = req.body;
-    // Check required fields
-    if (
-      !data?.name?.trim() ||
-      !data?.email?.trim() ||
-      !data?.password?.trim() ||
-      !data?.confirmPassword?.trim()
-    ) {
+    // Check required fields 
+    if (!data?.name?.trim() || !data?.email?.trim() ||!data?.password?.trim() || !data?.confirmPassword?.trim()) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
@@ -46,10 +41,10 @@ export const createUser = async (req, res, next) => {
       });
     }
 
-  
+
     const hashPassword = await bcrypt.hash(data.password, 10);
 
-  
+
     const user = await User.create({
       name: data.name.trim(),
       email,

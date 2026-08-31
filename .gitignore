@@ -39,12 +39,9 @@ Desktop.ini
 *.swp
 *.swo
 
-# Custom AI and Implementation Docs (Do not push to GitHub)
-AI_RULES.md
-ai_rules.md
-Docs/AI_RULES.MD
-Docs/AI_RULES.md
+# Custom AI and Implementation Docs
+
 Implementation.md
 implementation.md
-Docs/Implementation.md
-Docs/implementation.md
+postmanTesting.md
+

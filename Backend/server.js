@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import userRouter from './routers/user.router.js';
+import productRouter from './routers/product.router.js';
 import { errorMiddleware } from './middleware/error.middleware.js';
 
 dotenv.config();
@@ -31,8 +32,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-// User API Routes
+// API Routes
 app.use(userRouter);
+app.use(productRouter);
 
 // Global Error Middleware
 app.use(errorMiddleware);
