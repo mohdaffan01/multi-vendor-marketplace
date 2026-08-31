@@ -45,11 +45,14 @@ export const createUser = async (req, res, next) => {
     const hashPassword = await bcrypt.hash(data.password, 10);
 
 
+    const allowedRoles = ["customer", "vendor", "admin"];
+    const role = allowedRoles.includes(data?.role) ? data.role : "customer";
+
     const user = await User.create({
       name: data.name.trim(),
       email,
       password: hashPassword,
-      role: data.role === "vendor" ? "vendor" : "customer",
+      role,
     });
 
     return res.status(201).json({
@@ -117,6 +120,49 @@ export const login = async (req, res, next) => {
       },
     });
 
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// ---------------------------- Get All Users ----------------------------
+
+export const getAllUsers = async (req, res, next) => {
+  try {
+    const users = await User.find();
+
+    return res.status(200).json({
+      success: true,
+      count: users.length,
+      users,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// ---------------------------- Delete User ----------------------------
+
+export const deleteUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    await user.deleteOne();
+
+    return res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+    });
   } catch (error) {
     next(error);
   }
