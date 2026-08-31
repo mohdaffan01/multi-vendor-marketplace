@@ -1,15 +1,17 @@
 import User from "../models/user.model.js";
-import bcrypt from "bcrypt"
-
-
+import bcrypt from "bcrypt";
 
 //----------------------------------Create a User --------------------------------
 
-export const createUser = async (req, res) => {
+export const createUser = async (req, res, next) => {
   try {
     const data = req.body;
     // Check required fields
-    if (!data?.name?.trim() || !data?.email?.trim() || !data?.password?.trim() || !data?.confirmPassword?.trim()
+    if (
+      !data?.name?.trim() ||
+      !data?.email?.trim() ||
+      !data?.password?.trim() ||
+      !data?.confirmPassword?.trim()
     ) {
       return res.status(400).json({
         success: false,
@@ -44,10 +46,10 @@ export const createUser = async (req, res) => {
       });
     }
 
-    // Hash password before saving it
+  
     const hashPassword = await bcrypt.hash(data.password, 10);
 
-    // Create user
+  
     const user = await User.create({
       name: data.name.trim(),
       email,
@@ -67,22 +69,14 @@ export const createUser = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error creating user:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Unable to create user",
-      error: error.message,
-    });
+    next(error);
   }
 };
 
 
-
-
 // ---------------------------- Login ----------------------------
 
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
   try {
     const data = req.body;
     // Check required fields
@@ -125,18 +119,10 @@ export const login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        password : user.password,
       },
     });
 
   } catch (error) {
-    console.error("Error logging in user:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Unable to login",
-      error: error.message,
-    });
+    next(error);
   }
 };
-

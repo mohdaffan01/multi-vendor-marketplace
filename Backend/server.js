@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import userRouter from './routers/user.router.js';
+import { errorMiddleware } from './middleware/error.middleware.js';
 
 dotenv.config();
 
@@ -26,15 +27,15 @@ app.get('/', (req, res) => {
 
 app.get('/health', (req, res) => {
   res.status(200).json({
-    status : 'ok'
+    status: 'ok'
   });
 });
 
 // User API Routes
 app.use(userRouter);
 
-
-
+// Global Error Middleware
+app.use(errorMiddleware);
 
 
 mongoose.connect(process.env.MONGO_URI).then(() => {
