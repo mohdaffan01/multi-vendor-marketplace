@@ -4,16 +4,15 @@ import {
   getProductReviews,
   deleteReview,
 } from "../controllers/review.controller.js";
+import { isAuthenticatedUser } from "../middleware/auth.middleware.js";
 
 const reviewRouter = express.Router();
 
-// Create Review
-reviewRouter.post("/reviews", createReview);
-
-// Get Reviews for Product
+// Public Route
 reviewRouter.get("/reviews/product/:productId", getProductReviews);
 
-// Delete Review
-reviewRouter.delete("/reviews/:id", deleteReview);
+// Protected Routes
+reviewRouter.post("/reviews", isAuthenticatedUser, createReview);
+reviewRouter.delete("/reviews/:id", isAuthenticatedUser, deleteReview);
 
 export default reviewRouter;

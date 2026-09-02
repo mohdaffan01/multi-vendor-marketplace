@@ -34,7 +34,7 @@ export const createProduct = async (req, res, next) => {
       stock: data.stock || 0,
       images: data.images || [],
       vendor: data.vendor || null,
-      sellerUser: data.sellerUser || null,
+      sellerUser: req.user?._id || data.sellerUser || null,
     });
 
     return res.status(201).json({

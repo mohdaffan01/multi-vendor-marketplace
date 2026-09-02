@@ -5,7 +5,9 @@ export const createVendor = async (req, res, next) => {
   try {
     const { storeName, storeDescription, logo, banner, owner, phone, status } = req.body;
 
-    if (!storeName?.trim() || !owner) {
+    const ownerId = req.user?._id || owner;
+
+    if (!storeName?.trim() || !ownerId) {
       return res.status(400).json({
         success: false,
         message: "Store name and owner user ID are required",
@@ -25,7 +27,7 @@ export const createVendor = async (req, res, next) => {
       storeDescription: storeDescription ? storeDescription.trim() : "",
       logo: logo || "",
       banner: banner || "",
-      owner,
+      owner: ownerId,
       phone: phone || "",
       status: status || "approved",
     });

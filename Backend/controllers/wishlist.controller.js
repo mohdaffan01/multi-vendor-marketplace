@@ -3,7 +3,14 @@ import Wishlist from "../models/wishlist.model.js";
 // ---------------------------- Get User Wishlist ----------------------------
 export const getWishlist = async (req, res, next) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user?._id || req.params.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
+    }
 
     let wishlist = await Wishlist.findOne({ user: userId }).populate(
       "products",
@@ -26,7 +33,8 @@ export const getWishlist = async (req, res, next) => {
 // ---------------------------- Add to Wishlist ----------------------------
 export const addToWishlist = async (req, res, next) => {
   try {
-    const { userId, productId } = req.body;
+    const userId = req.user?._id || req.body.userId;
+    const { productId } = req.body;
 
     if (!userId || !productId) {
       return res.status(400).json({
@@ -64,7 +72,8 @@ export const addToWishlist = async (req, res, next) => {
 // ---------------------------- Remove from Wishlist ----------------------------
 export const removeFromWishlist = async (req, res, next) => {
   try {
-    const { userId, productId } = req.params;
+    const userId = req.user?._id || req.params.userId;
+    const { productId } = req.params;
 
     let wishlist = await Wishlist.findOne({ user: userId });
 

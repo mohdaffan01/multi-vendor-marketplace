@@ -19,9 +19,9 @@ const updateProductRatings = async (productId) => {
 // ---------------------------- Create Review ----------------------------
 export const createReview = async (req, res, next) => {
   try {
-    const { product, user, rating, comment } = req.body;
+    const reviewerId = req.user?._id || user;
 
-    if (!product || !user || !rating || !comment?.trim()) {
+    if (!product || !reviewerId || !rating || !comment?.trim()) {
       return res.status(400).json({
         success: false,
         message: "Product, user, rating (1-5), and comment are required",
@@ -30,7 +30,7 @@ export const createReview = async (req, res, next) => {
 
     const review = await Review.create({
       product,
-      user,
+      user: reviewerId,
       rating: Number(rating),
       comment: comment.trim(),
     });

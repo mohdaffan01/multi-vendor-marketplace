@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
+import sendToken from "../utils/token.js";
 
 //----------------------------------Create a User --------------------------------
 
@@ -41,9 +42,7 @@ export const createUser = async (req, res, next) => {
       });
     }
 
-
     const hashPassword = await bcrypt.hash(data.password, 10);
-
 
     const allowedRoles = ["customer", "vendor", "admin"];
     const role = allowedRoles.includes(data?.role) ? data.role : "customer";
@@ -55,16 +54,7 @@ export const createUser = async (req, res, next) => {
       role,
     });
 
-    return res.status(201).json({
-      success: true,
-      message: "User created successfully",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
+    return sendToken(user, 201, res, "User registered successfully");
 
   } catch (error) {
     next(error);
@@ -109,17 +99,43 @@ export const login = async (req, res, next) => {
         message: "Your account is disabled",
       });
     }
-    return res.status(200).json({
-      success: true,
-      message: "Login successful",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+    
+    return sendToken(user, 200, res, "Login successful");
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// ---------------------------- Logout User ----------------------------
+
+export const logout = async (req, res, next) => {
+  try {
+    res.cookie("token", null, {
+      expires: new Date(Date.now()),
+      httpOnly: true,
     });
 
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// ---------------------------- Get Logged In User Profile ----------------------------
+
+export const getProfile = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    return res.status(200).json({
+      success: true,
+      user,
+    });
   } catch (error) {
     next(error);
   }

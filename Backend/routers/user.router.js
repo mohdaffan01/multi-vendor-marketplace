@@ -1,24 +1,30 @@
 import express from 'express';
-import { createUser, login, getAllUsers, getUserById, updateUser, deleteUser } from '../controllers/user.controller.js';
+import {
+  createUser,
+  login,
+  logout,
+  getProfile,
+  getAllUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
+} from '../controllers/user.controller.js';
+import { isAuthenticatedUser, authorizeRoles } from '../middleware/auth.middleware.js';
 
 const userRouter = express.Router();
 
-// User Registration
+// Public User Routes
 userRouter.post('/register', createUser);
-
-// User Login
 userRouter.post('/login', login);
 
-// Get All Users
-userRouter.get('/users', getAllUsers);
+// Authenticated User Routes
+userRouter.post('/logout', isAuthenticatedUser, logout);
+userRouter.get('/me', isAuthenticatedUser, getProfile);
+userRouter.put('/users/:id', isAuthenticatedUser, updateUser);
 
-// Get Single User
-userRouter.get('/users/:id', getUserById);
-
-// Update User
-userRouter.put('/users/:id', updateUser);
-
-// Delete User
-userRouter.delete('/users/:id', deleteUser);
+// Admin Only Routes
+userRouter.get('/users', isAuthenticatedUser, authorizeRoles('admin'), getAllUsers);
+userRouter.get('/users/:id', isAuthenticatedUser, authorizeRoles('admin'), getUserById);
+userRouter.delete('/users/:id', isAuthenticatedUser, authorizeRoles('admin'), deleteUser);
 
 export default userRouter;

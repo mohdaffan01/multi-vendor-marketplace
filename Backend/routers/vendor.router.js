@@ -6,22 +6,17 @@ import {
   updateVendor,
   deleteVendor,
 } from "../controllers/vendor.controller.js";
+import { isAuthenticatedUser, authorizeRoles } from "../middleware/auth.middleware.js";
 
 const vendorRouter = express.Router();
 
-// Create Vendor Store
-vendorRouter.post("/vendors", createVendor);
-
-// Get All Vendor Stores
+// Public Routes
 vendorRouter.get("/vendors", getAllVendors);
-
-// Get Single Vendor Store
 vendorRouter.get("/vendors/:id", getVendorById);
 
-// Update Vendor Store
-vendorRouter.put("/vendors/:id", updateVendor);
-
-// Delete Vendor Store
-vendorRouter.delete("/vendors/:id", deleteVendor);
+// Protected Routes
+vendorRouter.post("/vendors", isAuthenticatedUser, authorizeRoles("vendor", "admin"), createVendor);
+vendorRouter.put("/vendors/:id", isAuthenticatedUser, authorizeRoles("vendor", "admin"), updateVendor);
+vendorRouter.delete("/vendors/:id", isAuthenticatedUser, authorizeRoles("admin"), deleteVendor);
 
 export default vendorRouter;
