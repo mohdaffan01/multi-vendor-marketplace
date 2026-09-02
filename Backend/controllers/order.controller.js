@@ -3,18 +3,20 @@ import Cart from "../models/cart.model.js";
 
 // ---------------------------- Create Order ----------------------------
 export const createOrder = async (req, res, next) => {
-  try {
-    const { user, items, shippingAddress, paymentMethod, totalAmount } = req.body;
 
-    if (!user || !items || items.length === 0 || !shippingAddress || !totalAmount) {
+  try {
+    const userId = req.user._id;
+    const { items, shippingAddress, paymentMethod, totalAmount } = req.body; 
+
+    if (!items || items.length === 0 || !shippingAddress || !totalAmount) {
       return res.status(400).json({
         success: false,
-        message: "User, items, shipping address, and total amount are required",
+        message: "items, shipping address, and total amount are required",
       });
     }
 
     const order = await Order.create({
-      user,
+      user: userId,
       items,
       shippingAddress,
       paymentMethod: paymentMethod || "COD",
@@ -22,7 +24,7 @@ export const createOrder = async (req, res, next) => {
     });
 
     // Automatically clear user cart after placing order
-    await Cart.findOneAndUpdate({ user }, { items: [], totalPrice: 0 });
+    await Cart.findOneAndUpdate({ user: userId }, { items: [], totalPrice: 0 });
 
     return res.status(201).json({
       success: true,
