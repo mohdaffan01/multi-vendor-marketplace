@@ -1,80 +1,116 @@
-# Multi-Vendor Marketplace - Project Documentation
+# 🛍️ Multi-Vendor Marketplace - Backend API
 
-## 📌 Project Overview
-This repository contains the backend architecture for a **Multi-Vendor Marketplace**. It enables multiple vendors (sellers) to register, list products, and manage inventory, while customers can register, login, and browse items.
-
----
-
-## 📁 Repository Structure
-
-```text
-multi-vendor-marketplace/
-├── Backend/
-│   ├── controllers/            # Controller logic for users and products
-│   │   ├── user.controller.js  # User registration & login
-│   │   └── product.controller.js # Product CRUD operations
-│   ├── middleware/             # Custom middlewares
-│   │   ├── error.middleware.js # Centralized global error handling
-│   │   └── auth.middleware.js  # JWT Protect & Role-based Authorization
-│   ├── models/                 # Mongoose database models
-│   │   ├── user.model.js       # User schema (Customer, Vendor, Admin)
-│   │   └── product.model.js    # Product schema
-│   ├── routers/                # API route declarations
-│   │   ├── user.router.js      # User auth routes (/register, /login)
-│   │   └── product.router.js   # Product routes (/products)
-│   ├── .env                    # Environment variables configuration
-│   ├── .env.example            # Environment variable template
-│   ├── package.json            # Dependencies & ES Module config
-│   └── server.js               # Express application entry point
-├── Frontend/                   # Client web application (planned)
-├── Docs/                       # Documentation & AI rules
-├── Implementation.md           # Backend implementation status tracking
-└── postmanTesting.md           # API testing guide with input JSON payloads
-```
+A complete, production-ready RESTful API backend for a **Multi-Vendor Marketplace** built with Node.js, Express.js, MongoDB (Mongoose), and JWT authentication.
 
 ---
 
-## 🛠️ Technology Stack (Backend)
+## 📌 Project Features
 
-- **Runtime**: Node.js (ES Modules - `"type": "module"`)
-- **Framework**: Express.js (`v5.2.1`)
-- **Database**: MongoDB with Mongoose ODM (`v9.9.4`)
-- **Authentication & Security**: `bcrypt` (password hashing), `jsonwebtoken`, `cookie-parser`
-- **Utility & Middleware**: `cors`, `dotenv`
-
----
-
-## 🚀 Implemented API Endpoints
-
-### 1. Base & Health Check
-- `GET /` - Base API status check
-- `GET /health` - Health check status (`{ "status": "ok" }`)
-
-### 2. User Routes (`/routers/user.router.js`)
-- `POST /register` - Register a new User (`customer` or `vendor`)
-- `POST /login` - User authentication & login
-- `GET /profile` - Get authenticated user profile (*Protected*)
-
-### 3. Product Routes (`/routers/product.router.js`)
-- `POST /products` - Create a new Product
-- `GET /products` - Get all Products (with populated vendor details)
-- `GET /products/:id` - Get a single Product by ID
-- `PUT /products/:id` - Update Product details by ID
-- `DELETE /products/:id` - Remove a Product by ID
+- 🔐 **JWT Authentication & RBAC**: Token-based authentication using HTTP-only cookies or `Bearer` tokens with Role-Based Access Control (`customer`, `vendor`, `admin`).
+- 👥 **User Management**: Customer & Vendor registration, login, profile management, and account administration.
+- 🏪 **Vendor/Store Management**: Create, update, and manage vendor store profiles linked to sellers.
+- 🏷️ **Category Management**: Organize products under structured categories (Admin managed).
+- 📦 **Product Catalog**: Multi-vendor product listings with search, category filtering, stock tracking, and image galleries.
+- 🛒 **Shopping Cart**: Real-time cart calculations per user.
+- 📜 **Order Processing**: Customer checkout flow, shipping address management, vendor store order tracking, and status updates (`processing`, `shipped`, `delivered`, `cancelled`).
+- ⭐ **Reviews & Ratings**: Product rating & review system with auto-computed average ratings.
+- ❤️ **Wishlist**: Save favorite products per user.
+- 🛡️ **Centralized Error Handling**: Express global error middleware for validation errors, duplicate keys, and invalid ObjectIDs.
 
 ---
 
-## ⚙️ Middleware Features
+## 🛠️ Tech Stack
 
-1. **Global Error Handler (`error.middleware.js`)**:
-   - Centralized error response formatting for Express.
-   - Built-in formatting for Mongoose `CastError`, Duplicate Key (`11000`), and `ValidationError`.
-
-2. **Authentication & Authorization (`auth.middleware.js`)**:
-   - `protect`: Verifies JWT from `Authorization: Bearer <token>` header or cookies.
-   - `authorize(...roles)`: Restricts route access based on user role (`customer`, `vendor`, `admin`).
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Database**: MongoDB with Mongoose ODM
+- **Security & Auth**: `jsonwebtoken`, `bcrypt` (password hashing), `cookie-parser`
+- **Utilities**: `dotenv`, `cors`
 
 ---
 
-## 🧪 Postman API Testing
-For detailed Postman setup, input JSON payloads, and testing instructions, view [`postmanTesting.md`](file:///c:/Java-Script/projects/multi-vendor-marketplace/postmanTesting.md).
+## 🚀 API Endpoints Overview
+
+### 1. User & Auth (`/user.router.js`)
+- `POST /register` - Register Customer, Vendor, or Admin
+- `POST /login` - User login & issue JWT
+- `POST /logout` - Logout & clear cookie 🔒
+- `GET /me` - Get current user profile 🔒
+- `PUT /users/:id` - Update profile 🔒
+- `GET /users` - Get all users 🔒 (Admin)
+- `DELETE /users/:id` - Delete user 🔒 (Admin)
+
+### 2. Categories (`/category.router.js`)
+- `GET /categories` - List categories (Public)
+- `GET /categories/:id` - Single category details (Public)
+- `POST /categories` - Create category 🔒 (Admin)
+- `PUT /categories/:id` - Update category 🔒 (Admin)
+- `DELETE /categories/:id` - Delete category 🔒 (Admin)
+
+### 3. Vendor Stores (`/vendor.router.js`)
+- `GET /vendors` - List all approved vendor stores (Public)
+- `GET /vendors/:id` - Single vendor store profile (Public)
+- `POST /vendors` - Create vendor store 🔒 (Vendor/Admin)
+- `PUT /vendors/:id` - Update vendor store 🔒 (Vendor/Admin)
+- `DELETE /vendors/:id` - Delete store 🔒 (Admin)
+
+### 4. Products (`/product.router.js`)
+- `GET /products` - List products with filters (`?category=`, `?vendor=`, `?keyword=`) (Public)
+- `GET /products/:id` - Get single product details (Public)
+- `POST /products` - Create product 🔒 (Vendor/Admin)
+- `PUT /products/:id` - Update product 🔒 (Vendor/Admin)
+- `DELETE /products/:id` - Delete product 🔒 (Vendor/Admin)
+
+### 5. Shopping Cart (`/cart.router.js`)
+- `GET /cart` - View user cart 🔒
+- `POST /cart` - Add item to cart 🔒
+- `PUT /cart/item` - Update cart item quantity 🔒
+- `DELETE /cart/item/:productId` - Remove item from cart 🔒
+- `DELETE /cart` - Clear entire cart 🔒
+
+### 6. Orders (`/order.router.js`)
+- `POST /orders` - Place new order (clears cart) 🔒
+- `GET /orders/me` - Get customer's orders 🔒
+- `GET /orders/vendor/:vendorId` - Get vendor's store orders 🔒 (Vendor/Admin)
+- `GET /orders/:id` - Get order detail 🔒
+- `GET /orders` - Get all platform orders 🔒 (Admin)
+- `PUT /orders/:id/status` - Update order/payment status 🔒 (Vendor/Admin)
+- `DELETE /orders/:id` - Delete order 🔒 (Admin)
+
+### 7. Product Reviews (`/review.router.js`)
+- `GET /reviews/product/:productId` - Get reviews for product (Public)
+- `POST /reviews` - Add review & rating 🔒
+- `DELETE /reviews/:id` - Delete review 🔒
+
+### 8. Wishlist (`/wishlist.router.js`)
+- `GET /wishlist` - View user wishlist 🔒
+- `POST /wishlist` - Add product to wishlist 🔒
+- `DELETE /wishlist/item/:productId` - Remove product from wishlist 🔒
+
+---
+
+## ⚡ How to Run
+
+1. **Install Dependencies**:
+   ```bash
+   cd Backend
+   npm install
+   ```
+
+2. **Configure Environment (`.env`)**:
+   Ensure `.env` inside `Backend/` contains:
+   ```env
+   PORT=3000
+   MONGO_URI=your_mongodb_connection_uri
+   JWT_SECRET=your_secret_key
+   JWT_EXPIRES_IN=7d
+   COOKIE_EXPIRES_TIME=7
+   ```
+
+3. **Start Development Server**:
+   ```bash
+   npm run dev
+   ```
+
+---
+
