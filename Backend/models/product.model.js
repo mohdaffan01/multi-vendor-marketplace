@@ -23,9 +23,9 @@ const productSchema = new mongoose.Schema(
     },
 
     category: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
       required: [true, "Product category is required"],
-      trim: true,
     },
 
     stock: {
@@ -34,13 +34,34 @@ const productSchema = new mongoose.Schema(
       default: 0,
     },
 
+    images: [
+      {
+        type: String,
+      },
+    ],
+
     vendor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Vendor",
+    },
+
+    sellerUser: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+
+    ratings: {
+      type: Number,
+      default: 0,
+    },
+
+    numReviews: {
+      type: Number,
+      default: 0,
+    },
   },
   {
-    timestamps: true, // Automatically adds createdAt and updatedAt
+    timestamps: true,
   }
 );
 

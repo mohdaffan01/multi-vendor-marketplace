@@ -10,11 +10,11 @@ export const createProduct = async (req, res, next) => {
       !data?.name?.trim() ||
       !data?.description?.trim() ||
       data?.price === undefined ||
-      !data?.category?.trim()
+      !data?.category
     ) {
       return res.status(400).json({
         success: false,
-        message: "All fields are required",
+        message: "All required fields (name, description, price, category) must be provided",
       });
     }
 
@@ -30,9 +30,11 @@ export const createProduct = async (req, res, next) => {
       name: data.name.trim(),
       description: data.description.trim(),
       price: data.price,
-      category: data.category.trim(),
+      category: data.category,
       stock: data.stock || 0,
-      vendor: data.vendor,
+      images: data.images || [],
+      vendor: data.vendor || null,
+      sellerUser: data.sellerUser || null,
     });
 
     return res.status(201).json({
@@ -47,11 +49,29 @@ export const createProduct = async (req, res, next) => {
 };
 
 
-// ---------------------------- Get All Products ----------------------------
+// ---------------------------- Get All Products (with filters) ----------------------------
 
 export const getAllProducts = async (req, res, next) => {
   try {
-    const products = await Product.find().populate("vendor", "name email");
+    const { category, vendor, keyword } = req.query;
+    const filter = {};
+
+    if (category) {
+      filter.category = category;
+    }
+
+    if (vendor) {
+      filter.vendor = vendor;
+    }
+
+    if (keyword) {
+      filter.name = { $regex: keyword, $options: "i" };
+    }
+
+    const products = await Product.find(filter)
+      .populate("category", "name description")
+      .populate("vendor", "storeName logo")
+      .populate("sellerUser", "name email");
 
     return res.status(200).json({
       success: true,
@@ -70,7 +90,10 @@ export const getAllProducts = async (req, res, next) => {
 export const getProductById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const product = await Product.findById(id).populate("vendor", "name email");
+    const product = await Product.findById(id)
+      .populate("category", "name description")
+      .populate("vendor", "storeName logo phone")
+      .populate("sellerUser", "name email");
 
     if (!product) {
       return res.status(404).json({

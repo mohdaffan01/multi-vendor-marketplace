@@ -143,6 +143,73 @@ export const getAllUsers = async (req, res, next) => {
 };
 
 
+// ---------------------------- Get Single User ----------------------------
+
+export const getUserById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// ---------------------------- Update User ----------------------------
+
+export const updateUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const data = req.body;
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // If password is updated, hash it
+    if (data.password) {
+      if (data.password.length < 6) {
+        return res.status(400).json({
+          success: false,
+          message: "At least 6 characters in your password!",
+        });
+      }
+      data.password = await bcrypt.hash(data.password, 10);
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(id, data, {
+      new: true,
+      runValidators: true,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 // ---------------------------- Delete User ----------------------------
 
 export const deleteUser = async (req, res, next) => {
