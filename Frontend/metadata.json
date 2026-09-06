@@ -1,0 +1,6 @@
+{
+  "name": "VerdantMart",
+  "description": "Handcrafted and sustainable ethical artisan marketplace connecting conscious shoppers with independent makers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
