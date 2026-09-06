@@ -7,8 +7,10 @@ export const ExploreView = ({
   onAddToCart,
   wishlist,
   onToggleWishlist,
+  products = ALL_PRODUCTS,
 }) => {
-  const [searchQuery, setSearchQuery] = useState('Glazed Stoneware');
+  const allProducts = products && products.length > 0 ? products : ALL_PRODUCTS;
+  const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState([
     'Glazed Stoneware',
     'Under $50',

@@ -7,11 +7,13 @@ import sendToken from "../utils/token.js";
 export const createUser = async (req, res, next) => {
   try {
     const data = req.body;
+    const confirmPassword = data?.confirmPassword || data?.password;
+
     // Check required fields 
-    if (!data?.name?.trim() || !data?.email?.trim() ||!data?.password?.trim() || !data?.confirmPassword?.trim()) {
+    if (!data?.name?.trim() || !data?.email?.trim() || !data?.password?.trim()) {
       return res.status(400).json({
         success: false,
-        message: "All fields are required",
+        message: "All fields (name, email, password) are required",
       });
     }
     if (data.password.length < 6) {
@@ -22,7 +24,7 @@ export const createUser = async (req, res, next) => {
     }
 
     // Check password confirmation
-    if (data.password !== data.confirmPassword) {
+    if (data.password !== confirmPassword) {
       return res.status(400).json({
         success: false,
         message: "Passwords do not match",

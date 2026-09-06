@@ -56,29 +56,45 @@ export const apiService = {
   // Products
   async getProducts(params = {}) {
     const query = new URLSearchParams(params).toString();
-    const res = await fetch(`${API_BASE_URL}/products${query ? `?${query}` : ''}`);
+    const endpoint = `/products${query ? `?${query}` : ''}`;
+    let res = await fetch(`${API_BASE_URL}${endpoint}`);
+    if (res.status === 404) {
+      res = await fetch(endpoint);
+    }
     return res.json();
   },
 
   async getProductById(id) {
-    const res = await fetch(`${API_BASE_URL}/products/${id}`);
+    let res = await fetch(`${API_BASE_URL}/products/${id}`);
+    if (res.status === 404) {
+      res = await fetch(`/products/${id}`);
+    }
     return res.json();
   },
 
   // Categories
   async getCategories() {
-    const res = await fetch(`${API_BASE_URL}/categories`);
+    let res = await fetch(`${API_BASE_URL}/categories`);
+    if (res.status === 404) {
+      res = await fetch('/categories');
+    }
     return res.json();
   },
 
   // Vendors
   async getVendors() {
-    const res = await fetch(`${API_BASE_URL}/vendors`);
+    let res = await fetch(`${API_BASE_URL}/vendors`);
+    if (res.status === 404) {
+      res = await fetch('/vendors');
+    }
     return res.json();
   },
 
   async getVendorById(id) {
-    const res = await fetch(`${API_BASE_URL}/vendors/${id}`);
+    let res = await fetch(`${API_BASE_URL}/vendors/${id}`);
+    if (res.status === 404) {
+      res = await fetch(`/vendors/${id}`);
+    }
     return res.json();
   },
 

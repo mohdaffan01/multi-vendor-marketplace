@@ -38,7 +38,16 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API Routes
+// API Routes (/api prefix and fallback)
+app.use('/api', userRouter);
+app.use('/api', productRouter);
+app.use('/api', categoryRouter);
+app.use('/api', vendorRouter);
+app.use('/api', cartRouter);
+app.use('/api', orderRouter);
+app.use('/api', reviewRouter);
+app.use('/api', wishlistRouter);
+
 app.use(userRouter);
 app.use(productRouter);
 app.use(categoryRouter);

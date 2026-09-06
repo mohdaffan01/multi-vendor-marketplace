@@ -15,10 +15,15 @@ export const StorefrontView = ({
   followedVendors,
   onToggleFollowVendor,
   onSelectCategory,
+  products = ALL_PRODUCTS,
+  categories = FEATURED_CATEGORIES,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [recentlyViewedItems, setRecentlyViewedItems] = useState(RECENTLY_VIEWED);
   const [voiceActive, setVoiceActive] = useState(false);
+
+  const displayProducts = products && products.length > 0 ? products : ALL_PRODUCTS;
+  const displayCategories = categories && categories.length > 0 ? categories : FEATURED_CATEGORIES;
 
   // Quick categories
   const quickCategories = [
@@ -31,13 +36,8 @@ export const StorefrontView = ({
   ];
 
   // Filter specific product subsets
-  const trendingProducts = ALL_PRODUCTS.filter((p) =>
-    ['soy-candle', 'linen-pillow', 'botanical-serum'].includes(p.id)
-  );
-
-  const bestSellerProducts = ALL_PRODUCTS.filter((p) =>
-    ['bamboo-cutlery', 'herbal-soap-trio', 'seagrass-tote', 'beeswax-wrap'].includes(p.id)
-  );
+  const trendingProducts = displayProducts.slice(0, 3);
+  const bestSellerProducts = displayProducts.slice(1, 5);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();

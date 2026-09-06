@@ -15,33 +15,61 @@ export default function App() {
   const [currentScreen, setCurrentScreen] = useState('auth');
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(HERO_PRODUCT);
-  const [cart, setCart] = useState([
-    {
-      id: 'cart-1',
-      product: HERO_PRODUCT,
-      quantity: 1,
-      selectedFinish: 'Sage Green',
-      selectedCapacity: '500ml (2 Cups)',
-    },
-  ]);
-  const [wishlist, setWishlist] = useState([
-    'ceramic-pour-over-set',
-    'matte-sage-mug',
-  ]);
+  const [cart, setCart] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
   const [followedVendors, setFollowedVendors] = useState(['earth-and-clay']);
   const [activeCategoryFilter, setActiveCategoryFilter] = useState('');
   const [toastMessage, setToastMessage] = useState(null);
 
-  // Sync products or cart from Backend API if connected
+  const [products, setProducts] = useState(ALL_PRODUCTS);
+  const [categories, setCategories] = useState([]);
+  const [vendors, setVendors] = useState([]);
+
+  // Sync products, categories, and vendors from MongoDB Backend API
   useEffect(() => {
     async function loadBackendData() {
       try {
-        const productsData = await apiService.getProducts();
+        const [productsData, categoriesData, vendorsData] = await Promise.all([
+          apiService.getProducts(),
+          apiService.getCategories(),
+          apiService.getVendors(),
+        ]);
+
         if (productsData && productsData.products && productsData.products.length > 0) {
-          console.log('Backend connected! Found', productsData.products.length, 'products');
+          const formattedProducts = productsData.products.map((p) => ({
+            id: p._id,
+            name: p.name,
+            description: p.description,
+            price: p.price,
+            rating: p.ratings || 4.9,
+            reviewCount: p.numReviews || 12,
+            category: p.category?.name || 'Handmade Ceramics',
+            maker: p.vendor?.storeName || p.sellerUser?.name || 'Earth & Clay Studio',
+            makerVerified: true,
+            inStock: (p.stock || 0) > 0,
+            image: p.images?.[0] || 'https://lh3.googleusercontent.com/aida-public/AB6AXuB75pvqsIQz67iL1jCeDpgNEzx5cjxV2DuwD62PXJGmlRRtCfz1RH6ZPRcat8KNc6Nx48S6JPw6saBUr8YRmnkfJlnlY_lFIukpZhAz0GngN1NyiaPgGOLq4t2jGzyEDYha0RzCbRYU6zUxYsZhkKUuwUvI4hY7moJL7aEpmOMXUHz1DpR8O1KzfAlIecHA3tbcq-zn3YPzs_2W8DHbg-r-AYcUxZ8QwyCpM2GJNqirzdZ_E5LvbGRS',
+            images: p.images && p.images.length > 0 ? p.images : [p.images?.[0]],
+          }));
+          setProducts(formattedProducts);
+          setSelectedProduct(formattedProducts[0]);
+        }
+
+        if (categoriesData && categoriesData.categories && categoriesData.categories.length > 0) {
+          const formattedCategories = categoriesData.categories.map((c) => ({
+            id: c._id,
+            title: c.name,
+            subtitle: c.description || 'Artisanal Collection',
+            image: c.image || 'https://lh3.googleusercontent.com/aida-public/AB6AXuAyURz0T_bro2kn6iN8AquSb8Bns3qqOgkjjyk82O0wEfZz65uD9ZC5GcdWaxPTZ93wwmzxG1Ajj3wwAj4kQT4yFKERv6oDXsS1K7RDrhsrO6L8BhmFFMtXiRx5Ib0lcWzFEndebAdrakzQMw7RvKr8Pi8U0EOTAZMMIk9_zelMJNie_Oadh4RDZyHRJAMc-LXJJ5tU7vUDzrC1yvYCNPcfBqFhFKwdTL-U6MGhxZtG_JNtk8v-GPRk',
+            makers: 'Verified Makers',
+          }));
+          setCategories(formattedCategories);
+        }
+
+        if (vendorsData && vendorsData.vendors) {
+          setVendors(vendorsData.vendors);
         }
       } catch (err) {
-        // Fallback to local mock data silently
+        console.warn('Backend API connection fallback to local:', err);
       }
     }
     loadBackendData();
@@ -78,6 +106,16 @@ export default function App() {
   };
 
   const handleNavigate = (screen) => {
+    if (screen === 'shopping-cart' && !currentUser) {
+      showToast('Please sign in to view your shopping cart');
+      setCurrentScreen('auth');
+      return;
+    }
+    if (screen === 'customer-account' && !currentUser) {
+      showToast('Please sign in to view your account');
+      setCurrentScreen('auth');
+      return;
+    }
     setCurrentScreen(screen);
   };
 
@@ -93,6 +131,12 @@ export default function App() {
     capacity,
     unitPrice
   ) => {
+    if (!currentUser) {
+      showToast('Please sign in to add items to your cart');
+      setCurrentScreen('auth');
+      return;
+    }
+
     const existingIndex = cart.findIndex(
       (item) =>
         item.product.id === product.id &&
@@ -145,6 +189,12 @@ export default function App() {
   };
 
   const handleToggleWishlist = (productId) => {
+    if (!currentUser) {
+      showToast('Please sign in to save items to your wishlist');
+      setCurrentScreen('auth');
+      return;
+    }
+
     if (wishlist.includes(productId)) {
       setWishlist(wishlist.filter((id) => id !== productId));
       showToast('Removed from Wishlist');
@@ -263,6 +313,8 @@ export default function App() {
             followedVendors={followedVendors}
             onToggleFollowVendor={handleToggleFollowVendor}
             onSelectCategory={handleSelectCategory}
+            products={products}
+            categories={categories}
           />
         )}
 
@@ -274,6 +326,7 @@ export default function App() {
             wishlist={wishlist}
             onToggleWishlist={handleToggleWishlist}
             activeCategoryFilter={activeCategoryFilter}
+            products={products}
           />
         )}
 
