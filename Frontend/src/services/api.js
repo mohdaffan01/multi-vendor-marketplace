@@ -72,6 +72,22 @@ export const apiService = {
     return res.json();
   },
 
+  async createProduct(productData) {
+    let res = await fetch(`${API_BASE_URL}/products`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(productData),
+    });
+    if (res.status === 404) {
+      res = await fetch('/products', {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(productData),
+      });
+    }
+    return res.json();
+  },
+
   // Categories
   async getCategories() {
     let res = await fetch(`${API_BASE_URL}/categories`);

@@ -105,6 +105,32 @@ export default function App() {
     setCurrentScreen('auth');
   };
 
+  const handleProductCreated = async () => {
+    try {
+      const productsData = await apiService.getProducts();
+      if (productsData && productsData.products && productsData.products.length > 0) {
+        const formattedProducts = productsData.products.map((p) => ({
+          id: p._id,
+          name: p.name,
+          description: p.description,
+          price: p.price,
+          rating: p.ratings || 4.9,
+          reviewCount: p.numReviews || 12,
+          category: p.category?.name || 'Handmade Ceramics',
+          maker: p.vendor?.storeName || p.sellerUser?.name || 'Earth & Clay Studio',
+          makerVerified: true,
+          inStock: (p.stock || 0) > 0,
+          image: p.images?.[0] || 'https://lh3.googleusercontent.com/aida-public/AB6AXuB75pvqsIQz67iL1jCeDpgNEzx5cjxV2DuwD62PXJGmlRRtCfz1RH6ZPRcat8KNc6Nx48S6JPw6saBUr8YRmnkfJlnlY_lFIukpZhAz0GngN1NyiaPgGOLq4t2jGzyEDYha0RzCbRYU6zUxYsZhkKUuwUvI4hY7moJL7aEpmOMXUHz1DpR8O1KzfAlIecHA3tbcq-zn3YPzs_2W8DHbg-r-AYcUxZ8QwyCpM2GJNqirzdZ_E5LvbGRS',
+          images: p.images && p.images.length > 0 ? p.images : [p.images?.[0]],
+        }));
+        setProducts(formattedProducts);
+        showToast('Live catalog refreshed from MongoDB!');
+      }
+    } catch (err) {
+      console.warn('Failed to refresh products:', err);
+    }
+  };
+
   const handleNavigate = (screen) => {
     if (screen === 'shopping-cart' && !currentUser) {
       showToast('Please sign in to view your shopping cart');
@@ -374,6 +400,7 @@ export default function App() {
             onToggleFollowVendor={handleToggleFollowVendor}
             currentUser={currentUser}
             onLogout={handleLogout}
+            onProductCreated={handleProductCreated}
           />
         )}
       </main>

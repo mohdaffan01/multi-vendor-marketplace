@@ -1,4 +1,6 @@
 import Product from "../models/product.model.js";
+import Category from "../models/category.model.js";
+import mongoose from "mongoose";
 
 //----------------------------------Create a Product --------------------------------
 
@@ -25,21 +27,34 @@ export const createProduct = async (req, res, next) => {
       });
     }
 
+    let categoryObjectId = data.category;
+    if (!mongoose.Types.ObjectId.isValid(data.category)) {
+      let foundCategory = await Category.findOne({ name: data.category.toString().trim() });
+      if (!foundCategory) {
+        foundCategory = await Category.create({ name: data.category.toString().trim() });
+      }
+      categoryObjectId = foundCategory._id;
+    }
+
+    const imagesList = Array.isArray(data.images) && data.images.length > 0
+      ? data.images
+      : (data.image ? [data.image] : ["https://lh3.googleusercontent.com/aida-public/AB6AXuB75pvqsIQz67iL1jCeDpgNEzx5cjxV2DuwD62PXJGmlRRtCfz1RH6ZPRcat8KNc6Nx48S6JPw6saBUr8YRmnkfJlnlY_lFIukpZhAz0GngN1NyiaPgGOLq4t2jGzyEDYha0RzCbRYU6zUxYsZhkKUuwUvI4hY7moJL7aEpmOMXUHz1DpR8O1KzfAlIecHA3tbcq-zn3YPzs_2W8DHbg-r-AYcUxZ8QwyCpM2GJNqirzdZ_E5LvbGRS"]);
+
     // Create Product
     const product = await Product.create({
       name: data.name.trim(),
       description: data.description.trim(),
-      price: data.price,
-      category: data.category,
-      stock: data.stock || 0,
-      images: data.images || [],
+      price: Number(data.price),
+      category: categoryObjectId,
+      stock: data.stock !== undefined ? Number(data.stock) : 10,
+      images: imagesList,
       vendor: data.vendor || null,
       sellerUser: req.user?._id || data.sellerUser || null,
     });
 
     return res.status(201).json({
       success: true,
-      message: "Product created successfully",
+      message: "Product created successfully and saved to MongoDB",
       product,
     });
 

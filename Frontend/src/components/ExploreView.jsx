@@ -24,37 +24,65 @@ export const ExploreView = ({
   const [currentPage, setCurrentPage] = useState(1);
 
   // Filter states
-  const [selectedVendors, setSelectedVendors] = useState([
-    'Earth & Clay',
-    'Nordic Wood',
-  ]);
-  const [selectedFinish, setSelectedFinish] = useState('Glazed Stoneware');
-  const [selectedMinRating, setSelectedMinRating] = useState('4★ +');
+  const [selectedVendors, setSelectedVendors] = useState([]);
+  const [selectedFinish, setSelectedFinish] = useState('');
+  const [selectedMinRating, setSelectedMinRating] = useState('');
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(200);
 
-  const exploreProductIds = [
-    'matte-sage-mug',
-    'speckled-dinner-plate',
-    'matcha-whisk-bowl',
-    'olive-wood-spoon-set',
-    'organic-glaze-vase',
-    'terracotta-planter',
-  ];
-
-  let displayProducts = ALL_PRODUCTS.filter((p) => exploreProductIds.includes(p.id));
+  // Dynamic filter computation over allProducts
+  let displayProducts = allProducts.filter((p) => {
+    const price = Number(p.price || 0);
+    if (price < minPrice || (maxPrice < 200 && price > maxPrice)) {
+      return false;
+    }
+    if (searchQuery && searchQuery.trim() !== '') {
+      const q = searchQuery.toLowerCase().trim();
+      const nameMatch = p.name?.toLowerCase().includes(q);
+      const descMatch = p.description?.toLowerCase().includes(q);
+      const makerMatch = p.maker?.toLowerCase().includes(q);
+      const categoryMatch = p.category?.toLowerCase().includes(q);
+      if (!nameMatch && !descMatch && !makerMatch && !categoryMatch) {
+        return false;
+      }
+    }
+    if (selectedVendors.length > 0) {
+      const vendorMatch = selectedVendors.some((v) =>
+        p.maker?.toLowerCase().includes(v.toLowerCase())
+      );
+      if (!vendorMatch) return false;
+    }
+    if (selectedMinRating) {
+      const numericMin = parseFloat(selectedMinRating);
+      if (!isNaN(numericMin) && (p.rating || 5) < numericMin) {
+        return false;
+      }
+    }
+    return true;
+  });
 
   if (sortBy === 'Price: Low to High') {
     displayProducts.sort((a, b) => a.price - b.price);
   } else if (sortBy === 'Price: High to Low') {
     displayProducts.sort((a, b) => b.price - a.price);
   } else if (sortBy === 'Top Rated') {
-    displayProducts.sort((a, b) => b.rating - a.rating);
+    displayProducts.sort((a, b) => (b.rating || 0) - (a.rating || 0));
   }
 
   const removeFilter = (filterName) => {
+    if (filterName.includes('$')) {
+      setMinPrice(0);
+      setMaxPrice(200);
+    }
     setActiveFilters(activeFilters.filter((f) => f !== filterName));
   };
 
   const clearAllFilters = () => {
+    setSelectedVendors([]);
+    setSelectedFinish('');
+    setSelectedMinRating('');
+    setMinPrice(0);
+    setMaxPrice(200);
     setActiveFilters([]);
   };
 
@@ -68,6 +96,9 @@ export const ExploreView = ({
 
   const handleApplyFilters = () => {
     const newFilters = [];
+    if (maxPrice < 200 || minPrice > 0) {
+      newFilters.push(`$${minPrice} - $${maxPrice >= 200 ? '200+' : maxPrice}`);
+    }
     if (selectedFinish) newFilters.push(selectedFinish);
     if (selectedMinRating) newFilters.push(`Rating ${selectedMinRating}`);
     if (selectedVendors.length > 0) newFilters.push(`${selectedVendors.length} Vendors`);
@@ -79,6 +110,8 @@ export const ExploreView = ({
     setSelectedVendors([]);
     setSelectedFinish('');
     setSelectedMinRating('');
+    setMinPrice(0);
+    setMaxPrice(200);
     setActiveFilters([]);
     setIsFilterModalOpen(false);
   };
@@ -148,18 +181,27 @@ export const ExploreView = ({
 
           {/* Price Range Slider */}
           <div className="flex flex-col gap-2">
-            <span className="font-['Plus Jakarta Sans'] text-[14px] font-bold text-[#121c2a]">
-              Price Range
-            </span>
-            <div className="flex items-center justify-between text-[12px] font-['Inter'] text-[#3d4a42] mb-1">
-              <span>$0</span>
-              <span className="font-bold text-[#006948]">$15 - $50</span>
-              <span>$200+</span>
+            <div className="flex items-center justify-between">
+              <span className="font-['Plus_Jakarta_Sans'] text-[14px] font-bold text-[#121c2a]">
+                Price Range
+              </span>
+              <span className="font-bold text-[#006948] text-xs">
+                ${minPrice} - ${maxPrice >= 200 ? '200+' : maxPrice}
+              </span>
             </div>
-            <div className="w-full h-2 bg-[#eff4ff] rounded-full relative">
-              <div className="absolute left-[15%] right-[40%] h-full bg-[#006948] rounded-full"></div>
-              <div className="absolute left-[15%] top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-white border-2 border-[#006948] rounded-full shadow-md"></div>
-              <div className="absolute right-[40%] top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 bg-white border-2 border-[#006948] rounded-full shadow-md"></div>
+            <input
+              type="range"
+              min="0"
+              max="200"
+              step="5"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(Number(e.target.value))}
+              className="w-full h-2 bg-[#eff4ff] rounded-lg appearance-none cursor-pointer accent-[#006948]"
+            />
+            <div className="flex items-center justify-between text-[11px] font-['Inter'] text-[#6d7a72]">
+              <span>$0</span>
+              <span>Max: ${maxPrice >= 200 ? '200+' : maxPrice}</span>
+              <span>$200+</span>
             </div>
           </div>
 
@@ -526,7 +568,33 @@ export const ExploreView = ({
             </div>
 
             <div className="flex flex-col gap-4 overflow-y-auto py-3 pr-1 no-scrollbar">
+              {/* Mobile Price Range */}
               <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-['Plus_Jakarta_Sans'] text-[14px] font-bold text-[#121c2a]">
+                    Price Range
+                  </span>
+                  <span className="font-bold text-[#006948] text-xs">
+                    ${minPrice} - ${maxPrice >= 200 ? '200+' : maxPrice}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="200"
+                  step="5"
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(Number(e.target.value))}
+                  className="w-full h-2 bg-[#eff4ff] rounded-lg appearance-none cursor-pointer accent-[#006948]"
+                />
+                <div className="flex items-center justify-between text-[11px] font-['Inter'] text-[#6d7a72]">
+                  <span>$0</span>
+                  <span>Max: ${maxPrice >= 200 ? '200+' : maxPrice}</span>
+                  <span>$200+</span>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 pt-2 border-t border-[#eff4ff]">
                 <span className="font-['Plus Jakarta Sans'] text-[14px] font-bold text-[#121c2a]">
                   Verified Vendors
                 </span>
