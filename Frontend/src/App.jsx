@@ -8,10 +8,12 @@ import { ProductDetailsView } from './components/ProductDetailsView';
 import { VendorHubView } from './components/VendorHubView';
 import { CartView } from './components/CartView';
 import { AccountView } from './components/AccountView';
+import { AuthView } from './components/AuthView';
 import { apiService } from './services/api';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState('storefront');
+  const [currentScreen, setCurrentScreen] = useState('auth');
+  const [currentUser, setCurrentUser] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(HERO_PRODUCT);
   const [cart, setCart] = useState([
     {
@@ -55,6 +57,24 @@ export default function App() {
     setTimeout(() => {
       setToastMessage(null);
     }, 2400);
+  };
+
+  const handleLoginSuccess = (user) => {
+    setCurrentUser(user);
+    showToast(`Welcome back, ${user.name || 'Artisan'}!`);
+    setCurrentScreen('storefront');
+  };
+
+  const handleGuestAccess = () => {
+    showToast('Browsing as Guest');
+    setCurrentScreen('storefront');
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    apiService.logout().catch(() => {});
+    showToast('Signed out successfully');
+    setCurrentScreen('auth');
   };
 
   const handleNavigate = (screen) => {
@@ -173,8 +193,16 @@ export default function App() {
       />
 
       {/* Screen Quick-Switcher Bar for Instant Testing Across All Screens */}
-      <div className="fixed top-[6.25rem] right-3 z-40 hidden md:flex items-center gap-1 bg-white/90 backdrop-blur-md px-2 py-1 rounded-full shadow-md border border-[#bccac0]/30 text-xs font-['Inter']">
+      <div className="fixed top-[7.25rem] right-4 z-40 hidden md:flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-[#bccac0]/40 text-xs font-['Inter'] transition-all">
         <span className="font-semibold text-[#006948] px-1">Screens:</span>
+        <button
+          onClick={() => handleNavigate('auth')}
+          className={`px-2 py-0.5 rounded-full transition-colors cursor-pointer ${
+            currentScreen === 'auth' ? 'bg-[#006948] text-white' : 'hover:bg-[#eff4ff]'
+          }`}
+        >
+          0. Login/Signup
+        </button>
         <button
           onClick={() => handleNavigate('storefront')}
           className={`px-2 py-0.5 rounded-full transition-colors cursor-pointer ${
@@ -218,6 +246,13 @@ export default function App() {
           currentScreen === 'product-details' ? 'pt-16' : 'pt-28'
         }`}
       >
+        {currentScreen === 'auth' && (
+          <AuthView
+            onLoginSuccess={handleLoginSuccess}
+            onGuestAccess={handleGuestAccess}
+          />
+        )}
+
         {currentScreen === 'storefront' && (
           <StorefrontView
             onNavigate={handleNavigate}
@@ -284,13 +319,24 @@ export default function App() {
             onSelectProduct={handleSelectProduct}
             followedVendors={followedVendors}
             onToggleFollowVendor={handleToggleFollowVendor}
+            currentUser={currentUser}
+            onLogout={handleLogout}
           />
         )}
       </main>
 
       {/* Mobile Dock */}
-      <div className="md:hidden fixed top-24 right-3 z-40">
+      <div className="md:hidden fixed top-[7.25rem] right-3 z-40">
         <div className="bg-white/90 backdrop-blur-md p-1 rounded-full shadow-md border border-[#bccac0]/30 flex items-center gap-1">
+          <button
+            onClick={() => handleNavigate('auth')}
+            title="Login / Signup"
+            className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+              currentScreen === 'auth' ? 'bg-[#006948] text-white' : 'text-[#3d4a42]'
+            }`}
+          >
+            0
+          </button>
           <button
             onClick={() => handleNavigate('storefront')}
             title="Home Storefront"

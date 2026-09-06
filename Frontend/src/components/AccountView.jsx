@@ -9,8 +9,12 @@ export const AccountView = ({
   onSelectProduct,
   followedVendors,
   onToggleFollowVendor,
+  currentUser,
+  onLogout,
 }) => {
   const wishlistProducts = ALL_PRODUCTS.filter((p) => wishlist.includes(p.id));
+  const displayName = currentUser?.name || 'Sophia Green';
+  const displayRole = currentUser?.role === 'vendor' ? 'Artisan Studio' : 'Level 4 Steward';
 
   return (
     <div className="flex flex-col w-full max-w-7xl mx-auto px-4 md:px-8 pb-28 pt-2">
@@ -19,14 +23,12 @@ export const AccountView = ({
         {/* Left Column: Profile, Impact Stats, Wishlist */}
         <div className="lg:col-span-7 flex flex-col gap-6">
           {/* User Profile Header Card */}
-          <div className="bg-white rounded-3xl p-5 shadow-xs border border-[#bccac0]/20 flex items-center justify-between">
+          <div className="bg-white rounded-3xl p-5 shadow-xs border border-[#bccac0]/20 flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
               <div className="relative">
-                <img
-                  src={USER_AVATAR}
-                  alt="Profile"
-                  className="w-18 h-18 rounded-full object-cover ring-4 ring-[#a6f2cf]"
-                />
+                <div className="w-16 h-16 rounded-full bg-[#eff4ff] text-[#006948] flex items-center justify-center ring-4 ring-[#a6f2cf]">
+                  <span className="material-symbols-outlined text-3xl">person</span>
+                </div>
                 <span className="absolute bottom-0 right-0 w-6 h-6 bg-[#006948] text-white rounded-full flex items-center justify-center text-xs">
                   <span className="material-symbols-outlined text-[14px]">eco</span>
                 </span>
@@ -35,24 +37,28 @@ export const AccountView = ({
               <div className="flex flex-col gap-0.5">
                 <div className="flex items-center gap-2">
                   <h1 className="font-['Plus Jakarta Sans'] text-[20px] md:text-[24px] font-bold text-[#121c2a]">
-                    Sophia Green
+                    {displayName}
                   </h1>
-                  <span className="bg-[#a6f2cf] text-[#247155] font-['Inter'] text-[11px] font-bold px-2 py-0.5 rounded-full">
-                    Level 4 Steward
+                  <span className="bg-[#a6f2cf] text-[#247155] font-['Inter'] text-[11px] font-bold px-2 py-0.5 rounded-full capitalize">
+                    {displayRole}
                   </span>
                 </div>
                 <span className="font-['Inter'] text-[13px] text-[#3d4a42]">
-                  Member since May 2023 • Portland, OR
+                  {currentUser?.email || 'sophia@verdantmart.eco'} • Member since May 2023
                 </span>
               </div>
             </div>
 
-            <button
-              onClick={() => onNavigate('storefront')}
-              className="w-10 h-10 rounded-full bg-[#eff4ff] text-[#3d4a42] flex items-center justify-center hover:bg-[#d9e3f6] transition-colors cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-lg">settings</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onLogout || (() => onNavigate('auth'))}
+                className="px-3.5 py-2 rounded-2xl bg-[#ffdad6]/60 hover:bg-[#ffdad6] text-[#ba1a1a] font-['Inter'] text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                title="Sign Out"
+              >
+                <span className="material-symbols-outlined text-base">logout</span>
+                <span>Sign Out</span>
+              </button>
+            </div>
           </div>
 
           {/* Sustainability Impact Stats */}

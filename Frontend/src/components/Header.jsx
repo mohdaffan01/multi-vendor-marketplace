@@ -76,13 +76,9 @@ export const Header = ({
               <button
                 aria-label="View Account"
                 onClick={() => onNavigate('customer-account')}
-                className="cursor-pointer"
+                className="w-9 h-9 rounded-full bg-[#eff4ff] text-[#006948] hover:bg-[#a6f2cf] flex items-center justify-center transition-colors cursor-pointer ring-2 ring-[#a6f2cf]"
               >
-                <img
-                  src={USER_AVATAR}
-                  alt="Profile"
-                  className="w-8 h-8 rounded-full object-cover ring-2 ring-[#a6f2cf]"
-                />
+                <span className="material-symbols-outlined text-xl">person</span>
               </button>
             </div>
           </>
@@ -146,13 +142,9 @@ export const Header = ({
                 <button
                   aria-label="Profile"
                   onClick={() => onNavigate('customer-account')}
-                  className="cursor-pointer"
+                  className="w-9 h-9 rounded-full bg-[#eff4ff] text-[#006948] hover:bg-[#a6f2cf] flex items-center justify-center transition-colors cursor-pointer ring-2 ring-[#a6f2cf]"
                 >
-                  <img
-                    src={USER_AVATAR}
-                    alt="Profile"
-                    className="w-8 h-8 rounded-full object-cover ring-2 ring-[#a6f2cf]"
-                  />
+                  <span className="material-symbols-outlined text-xl">person</span>
                 </button>
               </div>
             </div>
